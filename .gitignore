@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+venv/
+.env
+
+# Node
+node_modules/
+dist/
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Django
+db.sqlite3
+/staticfiles/
+*.log
+media/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Project planning (not for submission)
+CLAUDE.md
+PLAN.md
+FE.md

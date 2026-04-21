@@ -1,0 +1,14 @@
+django>=5.0
+djangorestframework
+djangorestframework-simplejwt
+django-cors-headers
+psycopg[binary]
+python-decouple
+drf-spectacular
+weasyprint
+pytest
+pytest-django
+factory-boy
+gunicorn
+whitenoise
+python-dateutil
