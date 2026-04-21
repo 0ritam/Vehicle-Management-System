@@ -1,12 +1,16 @@
 from decimal import Decimal
 
+from django.conf import settings
 from django.db import transaction
 from django.db.models import Count, Q, Sum
 from django.db.models.functions import TruncDay, TruncMonth, TruncYear
+from django.http import HttpResponse
+from django.template.loader import render_to_string
 from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from weasyprint import HTML
 
 from .models import Component, Payment, ServiceItem, ServiceOrder, Vehicle
 from .serializers import (
@@ -211,11 +215,35 @@ class ServiceOrderViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["get"], url_path="invoice.pdf")
     def invoice(self, request, pk=None):
-        # Stub — Phase 6 fills this
-        return Response(
-            {"detail": "Invoice generation not yet implemented."},
-            status=status.HTTP_501_NOT_IMPLEMENTED,
+        order = self.get_object()
+
+        if order.status not in (
+            ServiceOrder.Status.COMPLETED,
+            ServiceOrder.Status.PAID,
+        ):
+            return Response(
+                {"detail": "Invoice is only available for COMPLETED or PAID orders."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        html_string = render_to_string(
+            "invoice.html",
+            {
+                "order": order,
+                "company_name": settings.COMPANY_NAME,
+                "company_address": settings.COMPANY_ADDRESS,
+                "company_gstin": settings.COMPANY_GSTIN,
+                "issued_at": timezone.now(),
+            },
         )
+
+        pdf_bytes = HTML(string=html_string).write_pdf()
+
+        response = HttpResponse(pdf_bytes, content_type="application/pdf")
+        response["Content-Disposition"] = (
+            f'attachment; filename="Invoice-{order.order_number}.pdf"'
+        )
+        return response
 
     @action(detail=True, methods=["get"], url_path=r"compare/(?P<component_id>\d+)")
     def compare(self, request, pk=None, component_id=None):

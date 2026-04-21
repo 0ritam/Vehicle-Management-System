@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Invoice {{ order.order_number }}</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 18mm 16mm;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      font-family: "Helvetica", "Arial", sans-serif;
+      font-size: 10pt;
+      color: #1f2937;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .mono { font-family: "Courier New", monospace; }
+    .upper { text-transform: uppercase; letter-spacing: 0.08em; }
+    .muted { color: #6b7280; }
+    .bold { font-weight: 700; }
+    .right { text-align: right; }
+
+    /* ── Header ───────────────────────────────────────── */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding-bottom: 16px;
+      border-bottom: 3px solid #ff4757;
+      margin-bottom: 28px;
+    }
+
+    .company-name {
+      font-size: 20pt;
+      font-weight: 800;
+      color: #111827;
+      letter-spacing: -0.01em;
+      margin: 0;
+    }
+
+    .company-meta {
+      font-size: 9pt;
+      color: #4b5563;
+      line-height: 1.5;
+      margin-top: 4px;
+    }
+
+    .invoice-label {
+      text-align: right;
+    }
+
+    .invoice-label .tag {
+      display: inline-block;
+      background: #111827;
+      color: #fff;
+      font-size: 8pt;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      padding: 4px 10px;
+      border-radius: 3px;
+    }
+
+    .invoice-number {
+      font-size: 16pt;
+      font-weight: 800;
+      margin-top: 6px;
+      color: #111827;
+    }
+
+    .invoice-meta {
+      font-size: 9pt;
+      color: #6b7280;
+      margin-top: 2px;
+    }
+
+    /* ── Address blocks ───────────────────────────────── */
+    .addr-grid {
+      display: flex;
+      gap: 32px;
+      margin-bottom: 28px;
+    }
+
+    .addr-block { flex: 1; }
+
+    .addr-title {
+      font-size: 8pt;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: #6b7280;
+      text-transform: uppercase;
+      margin: 0 0 6px 0;
+    }
+
+    .addr-name {
+      font-size: 11pt;
+      font-weight: 700;
+      color: #111827;
+      margin: 0 0 2px 0;
+    }
+
+    .addr-line {
+      font-size: 9pt;
+      color: #4b5563;
+      line-height: 1.5;
+    }
+
+    /* ── Issue description ─────────────────────────────── */
+    .issue {
+      background: #f9fafb;
+      border-left: 3px solid #ff4757;
+      padding: 12px 14px;
+      margin-bottom: 24px;
+      font-size: 9pt;
+      color: #374151;
+    }
+
+    .issue-label {
+      font-size: 8pt;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: #6b7280;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    /* ── Items table ───────────────────────────────────── */
+    table.items {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+    }
+
+    table.items thead th {
+      background: #111827;
+      color: #fff;
+      font-size: 8pt;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 9px 10px;
+      text-align: left;
+    }
+
+    table.items thead th.num { text-align: right; }
+
+    table.items tbody td {
+      padding: 10px;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: 10pt;
+      vertical-align: top;
+    }
+
+    table.items tbody tr:nth-child(even) td {
+      background: #fafafa;
+    }
+
+    table.items .sku {
+      font-family: "Courier New", monospace;
+      font-size: 8pt;
+      color: #6b7280;
+      display: block;
+      margin-top: 2px;
+    }
+
+    table.items .type-badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-size: 7.5pt;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .type-new { background: #dbeafe; color: #1e40af; }
+    .type-repair { background: #fef3c7; color: #92400e; }
+
+    /* ── Totals ─────────────────────────────────────────── */
+    .totals-wrapper {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 28px;
+    }
+
+    .totals {
+      width: 45%;
+    }
+
+    .totals .row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      font-size: 10pt;
+    }
+
+    .totals .row .label { color: #6b7280; }
+
+    .totals .row.grand {
+      border-top: 2px solid #111827;
+      margin-top: 8px;
+      padding-top: 12px;
+      font-size: 13pt;
+      font-weight: 800;
+      color: #111827;
+    }
+
+    /* ── Payment ────────────────────────────────────────── */
+    .payment {
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      border-radius: 4px;
+      padding: 14px 16px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .payment .stamp {
+      font-size: 9pt;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #059669;
+    }
+
+    .payment .ref {
+      font-family: "Courier New", monospace;
+      font-size: 9pt;
+      color: #047857;
+      margin-top: 2px;
+    }
+
+    .payment .amount {
+      font-size: 14pt;
+      font-weight: 800;
+      color: #047857;
+    }
+
+    /* ── Footer ─────────────────────────────────────────── */
+    .footer {
+      border-top: 1px solid #e5e7eb;
+      padding-top: 14px;
+      text-align: center;
+      font-size: 8pt;
+      color: #6b7280;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .footer .thank-you {
+      font-size: 10pt;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 4px;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <h1 class="company-name">{{ company_name }}</h1>
+      <div class="company-meta">
+        {{ company_address }}<br>
+        GSTIN: <span class="mono">{{ company_gstin }}</span>
+      </div>
+    </div>
+    <div class="invoice-label">
+      <span class="tag">Tax Invoice</span>
+      <div class="invoice-number mono">{{ order.order_number }}</div>
+      <div class="invoice-meta">
+        Issued: {{ issued_at|date:"d M Y" }}<br>
+        {% if order.completed_at %}Completed: {{ order.completed_at|date:"d M Y" }}{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Bill-to / Vehicle -->
+  <div class="addr-grid">
+    <div class="addr-block">
+      <p class="addr-title">Bill To</p>
+      <p class="addr-name">{{ order.vehicle.owner_name }}</p>
+      <p class="addr-line mono">{{ order.vehicle.owner_contact }}</p>
+    </div>
+    <div class="addr-block">
+      <p class="addr-title">Vehicle</p>
+      <p class="addr-name mono">{{ order.vehicle.registration_number }}</p>
+      <p class="addr-line">
+        {{ order.vehicle.make }} {{ order.vehicle.model }} &middot; {{ order.vehicle.year }}
+      </p>
+    </div>
+    <div class="addr-block">
+      <p class="addr-title">Order Status</p>
+      <p class="addr-name">{{ order.get_status_display }}</p>
+      <p class="addr-line mono">Labor rate: ₹{{ order.labor_rate }}/hr</p>
+    </div>
+  </div>
+
+  <!-- Issue description -->
+  {% if order.issue_description %}
+  <div class="issue">
+    <div class="issue-label">Issue Reported</div>
+    {{ order.issue_description }}
+  </div>
+  {% endif %}
+
+  <!-- Items -->
+  <table class="items">
+    <thead>
+      <tr>
+        <th style="width: 50%;">Description</th>
+        <th style="width: 14%;">Type</th>
+        <th class="num" style="width: 8%;">Qty</th>
+        <th class="num" style="width: 14%;">Unit Price</th>
+        <th class="num" style="width: 14%;">Line Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in order.items.all %}
+      <tr>
+        <td>
+          <strong>{{ item.component.name }}</strong>
+          <span class="sku">{{ item.component.sku }}</span>
+        </td>
+        <td>
+          {% if item.item_type == "NEW" %}
+            <span class="type-badge type-new">New Part</span>
+          {% else %}
+            <span class="type-badge type-repair">Repair</span>
+          {% endif %}
+        </td>
+        <td class="right mono">{{ item.quantity }}</td>
+        <td class="right mono">₹{{ item.unit_price_snapshot }}</td>
+        <td class="right mono bold">₹{{ item.line_total }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="5" class="muted" style="text-align:center; padding: 24px;">
+          No items on this invoice.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Totals -->
+  <div class="totals-wrapper">
+    <div class="totals">
+      <div class="row">
+        <span class="label">Subtotal</span>
+        <span class="mono">₹{{ order.subtotal }}</span>
+      </div>
+      <div class="row">
+        <span class="label">Tax ({{ order.tax_rate }}%)</span>
+        <span class="mono">₹{{ order.tax_amount }}</span>
+      </div>
+      {% if order.discount_amount and order.discount_amount != "0.00" %}
+      <div class="row">
+        <span class="label">Discount</span>
+        <span class="mono">&minus;₹{{ order.discount_amount }}</span>
+      </div>
+      {% endif %}
+      <div class="row grand">
+        <span>Grand Total</span>
+        <span class="mono">₹{{ order.total }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment -->
+  {% if order.payment %}
+  <div class="payment">
+    <div>
+      <div class="stamp">✓ Payment Received</div>
+      <div class="ref">{{ order.payment.reference }} &middot; {{ order.payment.method }} &middot; {{ order.payment.paid_at|date:"d M Y, H:i" }}</div>
+    </div>
+    <div class="amount mono">₹{{ order.payment.amount }}</div>
+  </div>
+  {% endif %}
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="thank-you">Thank you for your business</div>
+    This is a system-generated invoice. For queries, contact {{ company_name }}.
+  </div>
+
+</body>
+</html>

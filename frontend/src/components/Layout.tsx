@@ -44,7 +44,7 @@ function NavLink({
         "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-all duration-200",
         active
           ? "bg-[var(--sidebar-accent)] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
-          : "text-[var(--sidebar-foreground)]/70 hover:bg-[var(--sidebar-accent)]/50 hover:text-white"
+          : "text-white/70 hover:bg-white/5 hover:text-white"
       )}
     >
       <Icon size={18} className={active ? "text-[var(--primary)]" : ""} />
