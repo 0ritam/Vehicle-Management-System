@@ -1,5 +1,6 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Link, Outlet, useLocation } from "react-router-dom"
+import { CommandPalette } from "./CommandPalette"
 import {
   LayoutDashboard,
   Package,
@@ -13,7 +14,6 @@ import {
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/hooks/useAuth"
 import { LedIndicator } from "./industrial/LedIndicator"
-import { Button } from "./ui/button"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "./ui/sheet"
 
 const navItems = [
@@ -114,11 +114,23 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
 export default function Layout() {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [paletteOpen, setPaletteOpen] = useState(false)
   const location = useLocation()
 
   const currentPage =
     navItems.find((item) => location.pathname.startsWith(item.to))?.label ??
     "Dashboard"
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault()
+        setPaletteOpen((open) => !open)
+      }
+    }
+    window.addEventListener("keydown", handler)
+    return () => window.removeEventListener("keydown", handler)
+  }, [])
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -134,10 +146,8 @@ export default function Layout() {
           <div className="flex items-center gap-3">
             {/* Mobile menu */}
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon-sm" className="lg:hidden">
-                  {mobileOpen ? <X size={18} /> : <Menu size={18} />}
-                </Button>
+              <SheetTrigger className="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-[var(--muted)] hover:text-foreground lg:hidden">
+                {mobileOpen ? <X size={18} /> : <Menu size={18} />}
               </SheetTrigger>
               <SheetContent
                 side="left"
@@ -154,9 +164,13 @@ export default function Layout() {
           </div>
 
           <div className="flex items-center gap-2">
-            <kbd className="hidden items-center gap-1 rounded-md bg-[var(--muted)] px-2 py-1 font-mono text-[10px] text-muted-foreground shadow-recessed sm:inline-flex">
+            <button
+              onClick={() => setPaletteOpen(true)}
+              className="hidden items-center gap-1.5 rounded-md bg-[var(--muted)] px-2.5 py-1.5 font-mono text-[10px] text-muted-foreground shadow-recessed transition-colors hover:text-foreground sm:inline-flex"
+              title="Open command palette"
+            >
               <Command size={10} />K
-            </kbd>
+            </button>
           </div>
         </header>
 
@@ -165,6 +179,8 @@ export default function Layout() {
           <Outlet />
         </main>
       </div>
+
+      <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
     </div>
   )
 }

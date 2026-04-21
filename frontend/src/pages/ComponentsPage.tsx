@@ -1,4 +1,5 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useSearchParams } from "react-router-dom"
 import { toast } from "sonner"
 import { isAxiosError } from "axios"
 import { Plus, Search, Pencil, Power, PowerOff, Package } from "lucide-react"
@@ -42,10 +43,20 @@ const TYPE_LABEL: Record<TypeFilter, string> = {
 }
 
 export default function ComponentsPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const [search, setSearch] = useState("")
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("ALL")
   const [formOpen, setFormOpen] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (searchParams.get("new") === "1") {
+      setEditingId(null)
+      setFormOpen(true)
+      searchParams.delete("new")
+      setSearchParams(searchParams, { replace: true })
+    }
+  }, [searchParams, setSearchParams])
 
   const debouncedSearch = useDebounce(search, 300)
 

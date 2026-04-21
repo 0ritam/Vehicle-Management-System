@@ -1,4 +1,5 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useSearchParams } from "react-router-dom"
 import { toast } from "sonner"
 import { isAxiosError } from "axios"
 import { Plus, Search, Pencil, Trash2, Car } from "lucide-react"
@@ -31,10 +32,20 @@ import {
 import { VehicleForm } from "@/features/vehicles/VehicleForm"
 
 export default function VehiclesPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const [search, setSearch] = useState("")
   const [formOpen, setFormOpen] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [deletingId, setDeletingId] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (searchParams.get("new") === "1") {
+      setEditingId(null)
+      setFormOpen(true)
+      searchParams.delete("new")
+      setSearchParams(searchParams, { replace: true })
+    }
+  }, [searchParams, setSearchParams])
 
   const debouncedSearch = useDebounce(search, 300)
 

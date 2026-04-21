@@ -94,6 +94,15 @@ export interface RevenueSummary {
   avg_order_value: string
 }
 
+export interface TopComponent {
+  id: number
+  name: string
+  sku: string
+  component_type: "NEW_PART" | "REPAIR_SERVICE"
+  revenue: string | number
+  units: number
+}
+
 export interface CompareOption {
   id: number
   name: string

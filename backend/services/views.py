@@ -411,3 +411,35 @@ class RevenueViewSet(viewsets.ViewSet):
         ).select_related("vehicle").prefetch_related("payment")
 
         return Response(ServiceOrderReadSerializer(orders, many=True).data)
+
+    @action(detail=False, methods=["get"], url_path="top-components")
+    def top_components(self, request):
+        start = request.query_params.get("start")
+        end = request.query_params.get("end")
+
+        qs = ServiceItem.objects.filter(order__payment__isnull=False)
+        if start:
+            qs = qs.filter(order__payment__paid_at__gte=start)
+        if end:
+            qs = qs.filter(order__payment__paid_at__lte=end)
+
+        top = (
+            qs.values(
+                "component__id", "component__name", "component__sku",
+                "component__component_type",
+            )
+            .annotate(revenue=Sum("line_total"), units=Sum("quantity"))
+            .order_by("-revenue")[:5]
+        )
+
+        return Response([
+            {
+                "id": t["component__id"],
+                "name": t["component__name"],
+                "sku": t["component__sku"],
+                "component_type": t["component__component_type"],
+                "revenue": t["revenue"] or Decimal("0"),
+                "units": t["units"] or 0,
+            }
+            for t in top
+        ])
