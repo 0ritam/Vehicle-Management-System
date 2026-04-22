@@ -25,10 +25,16 @@ export default function LoginPage() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
   })
+
+  const fillDemo = () => {
+    setValue("username", "ritam", { shouldValidate: true })
+    setValue("password", "ritam#1234", { shouldValidate: true })
+  }
 
   const onSubmit = async (data: LoginForm) => {
     setError("")
@@ -132,6 +138,28 @@ export default function LoginPage() {
             )}
           </Button>
         </form>
+
+        {/* Demo credentials hint */}
+        <div className="mt-5 rounded-md border border-dashed border-[var(--primary)]/40 bg-[var(--primary)]/5 p-3">
+          <div className="mb-2 flex items-center justify-between">
+            <p className="font-mono text-[9px] font-bold uppercase tracking-[0.1em] text-[var(--primary)]">
+              Demo Credentials
+            </p>
+            <button
+              type="button"
+              onClick={fillDemo}
+              className="font-mono text-[9px] font-bold uppercase tracking-[0.08em] text-[var(--primary)] underline-offset-2 hover:underline"
+            >
+              Autofill →
+            </button>
+          </div>
+          <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 font-mono text-[11px]">
+            <dt className="text-muted-foreground">username</dt>
+            <dd className="text-foreground">ritam</dd>
+            <dt className="text-muted-foreground">password</dt>
+            <dd className="text-foreground">ritam#1234</dd>
+          </dl>
+        </div>
 
         <p className="mt-4 text-center font-mono text-[9px] uppercase tracking-[0.06em] text-muted-foreground/50">
           Vehicle Service Management System v1.0
