@@ -19,20 +19,21 @@ export interface ComponentFilters {
 
 const keys = {
   all: ["components"] as const,
-  list: (filters: ComponentFilters) =>
-    [...keys.all, "list", filters] as const,
+  list: (filters: ComponentFilters, page: number) =>
+    [...keys.all, "list", filters, page] as const,
   detail: (id: number) => [...keys.all, "detail", id] as const,
 }
 
-export function useComponents(filters: ComponentFilters = {}) {
+export function useComponents(filters: ComponentFilters = {}, page = 1) {
   return useQuery({
-    queryKey: keys.list(filters),
+    queryKey: keys.list(filters, page),
     queryFn: async () => {
       const params: Record<string, string> = {}
       if (filters.search) params.search = filters.search
       if (filters.component_type) params.component_type = filters.component_type
       if (filters.is_active !== undefined)
         params.is_active = String(filters.is_active)
+      if (page > 1) params.page = String(page)
       const { data } = await api.get<Paginated<ComponentListItem>>(
         "/components/",
         { params }

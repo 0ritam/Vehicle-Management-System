@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import { toast } from "sonner"
 import { isAxiosError } from "axios"
-import { Plus, Search, Pencil, Power, PowerOff, Package } from "lucide-react"
+import { Plus, Search, Pencil, Power, PowerOff, Package, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -42,10 +42,13 @@ const TYPE_LABEL: Record<TypeFilter, string> = {
   REPAIR_SERVICE: "Repair Services",
 }
 
+const PAGE_SIZE = 20
+
 export default function ComponentsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [search, setSearch] = useState("")
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("ALL")
+  const [page, setPage] = useState(1)
   const [formOpen, setFormOpen] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
 
@@ -60,17 +63,27 @@ export default function ComponentsPage() {
 
   const debouncedSearch = useDebounce(search, 300)
 
+  useEffect(() => {
+    setPage(1)
+  }, [debouncedSearch, typeFilter])
+
   const filters: ComponentFilters = {
     search: debouncedSearch || undefined,
     component_type: typeFilter === "ALL" ? undefined : typeFilter,
   }
 
-  const { data, isLoading, isError, refetch } = useComponents(filters)
+  const { data, isLoading, isError, refetch } = useComponents(filters, page)
   const { data: editing } = useComponent(editingId)
   const deactivateMut = useDeactivateComponent()
   const activateMut = useActivateComponent()
 
   const components = data?.results ?? []
+  const totalCount = data?.count ?? 0
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
+  const hasPrev = !!data?.previous
+  const hasNext = !!data?.next
+  const rangeStart = totalCount === 0 ? 0 : (page - 1) * PAGE_SIZE + 1
+  const rangeEnd = Math.min(page * PAGE_SIZE, totalCount)
 
   const handleEdit = (id: number) => {
     setEditingId(id)
@@ -291,6 +304,38 @@ export default function ComponentsPage() {
           </TableBody>
         </Table>
       </IndustrialCard>
+
+      {/* Pagination */}
+      {totalCount > PAGE_SIZE && (
+        <div className="flex items-center justify-between">
+          <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+            Showing {rangeStart}–{rangeEnd} of {totalCount}
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={!hasPrev || isLoading}
+            >
+              <ChevronLeft size={14} />
+              Previous
+            </Button>
+            <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+              Page {page} of {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((p) => p + 1)}
+              disabled={!hasNext || isLoading}
+            >
+              Next
+              <ChevronRight size={14} />
+            </Button>
+          </div>
+        </div>
+      )}
 
       <ComponentForm
         open={formOpen}
