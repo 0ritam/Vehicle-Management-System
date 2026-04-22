@@ -1,13 +1,14 @@
 # Vehicle Service Management System (VSMS)
 
-A full-stack workshop management application for vehicle service orders, parts inventory, and revenue analytics. Built for a 24-hour assessment.
+A full-stack workshop management application for vehicle service orders, parts inventory, and revenue analytics.
 
 ## Live demo
 
 - **Frontend:** https://vehicle-management-system-gamma.vercel.app
 - **Backend / API:** https://vehicle-management-system-production-e126.up.railway.app
 - **API docs (Swagger UI):** https://vehicle-management-system-production-e126.up.railway.app/api/schema/swagger-ui/
-- **Demo credentials:** `ritam` / `ritam#1234`
+- **Demo credentials:** `ritam` / `ritam#1234` (also shown on the login page with a one-click autofill)
+- **Demo video:** https://www.loom.com/share/67e05c5c1dfe44c184ea0603b47d4a87
 
 ## Features
 
@@ -23,6 +24,32 @@ A full-stack workshop management application for vehicle service orders, parts i
 - ✅ Cmd+K command palette — navigation, create shortcuts, and live search across components + vehicles
 - ✅ Fully responsive — mobile, tablet, desktop
 - ✅ **47 automated tests** — 32 backend (pytest) + 15 frontend (vitest)
+
+## Screenshots
+
+### Landing page
+
+![Landing page](docs/screenshots/01-landing.png)
+
+### Login with demo-credential autofill
+
+![Login](docs/screenshots/02-login.png)
+
+### Revenue dashboard with KPIs and bar chart
+
+![Dashboard](docs/screenshots/03-dashboard.png)
+
+### Components inventory
+
+![Components](docs/screenshots/05-components.png)
+
+### Order detail page with line items and totals
+
+![Order detail](docs/screenshots/06-order-detail.png)
+
+### New-vs-Repair comparison in Add Item dialog
+
+![New vs Repair comparison](docs/screenshots/07-add-item-compare.png)
 
 ## Tech stack
 
@@ -191,6 +218,4 @@ Currently **15 tests** passing — formatters, auth hook, form validation.
 └── PLAN.md                      Phased execution plan
 ```
 
-## License
 
-Built as a job assessment submission. Not for production use without review.
